@@ -5861,34 +5861,43 @@ static int btmtk_sdio_set_Woble_radio_off(u8 is_suspend)
 
 static int btmtk_sdio_handle_entering_WoBLE_state(u8 is_suspend)
 {
-	int ret = -1;
+	int ret = 0;
 	u8 radio_off_cmd[] = { 0xC9, 0xFC, 0x05, 0x01, 0x20, 0x02, 0x00, 0x00 };
 	u8 radio_off_evt[] = { 0xE6, 0x02, 0x08, 0x00 };
+	int fops_state = 0;
 
 	BTMTK_DBG("begin");
 
+	FOPS_MUTEX_LOCK();
+	fops_state = btmtk_fops_get_state();
+	FOPS_MUTEX_UNLOCK();
+
 	if (!is_support_unify_woble(g_card)) {
-		BTMTK_ERR("not support, send radio off");
+		if (fops_state == BTMTK_FOPS_STATE_CLOSED)
+			BTMTK_WARN("when not support woble, in bt off state, do nothing!");
+		else {
+			BTMTK_ERR("not support, send radio off");
 
-		BTSDIO_DEBUG_RAW(radio_off_cmd, (unsigned int)sizeof(radio_off_cmd),
-			"%s: send radio_off_cmd is:", __func__);
-		ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT,
-				radio_off_cmd, sizeof(radio_off_cmd),
-				radio_off_evt, sizeof(radio_off_evt),
-				WOBLE_COMP_EVENT_TIMO);
+			BTSDIO_DEBUG_RAW(radio_off_cmd, (unsigned int)sizeof(radio_off_cmd),
+				"%s: send radio_off_cmd is:", __func__);
+			ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT,
+					radio_off_cmd, sizeof(radio_off_cmd),
+					radio_off_evt, sizeof(radio_off_evt),
+					WOBLE_COMP_EVENT_TIMO);
 
-		BTMTK_DBG("ret %d", ret);
-		goto Finish;
+			BTMTK_DBG("ret %d", ret);
+		}
 	} else {
 		if (g_card->dongle_state != BT_SDIO_DONGLE_STATE_POWER_ON) {
 			if (!g_card->bt_cfg.support_woble_for_bt_disable) {
 				BTMTK_INFO("BT is off, not support WoBLE");
-				return 0;
+				goto Finish;
 			}
 
 			if (btmtk_sdio_bt_set_power(1)) {
 				BTMTK_ERR("power on failed");
-				return -EIO;
+				ret = -EIO;
+				goto Finish;
 			}
 			g_card->dongle_state = BT_SDIO_DONGLE_STATE_POWER_ON_FOR_WOBLE;
 		} else {
@@ -6023,6 +6032,7 @@ static int btmtk_sdio_handle_leaving_WoBLE_state(void)
 	int ret = -1;
 	u8 radio_on_cmd[] = { 0xC9, 0xFC, 0x05, 0x01, 0x21, 0x02, 0x00, 0x00 };
 	u8 radio_on_evt[] = { 0xE6, 0x02, 0x08, 0x01 };
+	int fops_state = 0;
 
 	BTMTK_DBG("begin");
 
@@ -6031,17 +6041,26 @@ static int btmtk_sdio_handle_leaving_WoBLE_state(void)
 		return 0;
 	}
 
-	if (!is_support_unify_woble(g_card)) {
-		BTMTK_ERR("not support, send radio on");
-		BTSDIO_DEBUG_RAW(radio_on_cmd, (unsigned int)sizeof(radio_on_cmd),
-			"%s: send radio_on_cmd is:", __func__);
-		ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT,
-				radio_on_cmd, sizeof(radio_on_cmd),
-				radio_on_evt, sizeof(radio_on_evt),
-				WOBLE_COMP_EVENT_TIMO);
+	FOPS_MUTEX_LOCK();
+	fops_state = btmtk_fops_get_state();
+	FOPS_MUTEX_UNLOCK();
 
-		BTMTK_DBG("ret %d", ret);
-		return ret;
+	if (!is_support_unify_woble(g_card)) {
+		if (fops_state == BTMTK_FOPS_STATE_CLOSED) {
+			BTMTK_WARN("when not support woble, in bt off state, do nothing!");
+			return 0;
+		}
+		else {
+			BTMTK_ERR("not support, send radio on");
+			BTSDIO_DEBUG_RAW(radio_on_cmd, (unsigned int)sizeof(radio_on_cmd),
+				"%s: send radio_on_cmd is:", __func__);
+			ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT,
+					radio_on_cmd, sizeof(radio_on_cmd),
+					radio_on_evt, sizeof(radio_on_evt),
+					WOBLE_COMP_EVENT_TIMO);
+			BTMTK_DBG("ret %d", ret);
+			return ret;
+		}
 	}
 
 	if ((g_card->dongle_state != BT_SDIO_DONGLE_STATE_POWER_ON_FOR_WOBLE)
@@ -6157,7 +6176,7 @@ static int btmtk_sdio_suspend(struct device *dev)
 
 	btmtk_sdio_handle_entering_WoBLE_state(1);
 
-	if (g_card->bt_cfg.support_woble_by_eint) {
+	if (g_card->bt_cfg.support_unify_woble && g_card->bt_cfg.support_woble_by_eint) {
 		if (g_card->wobt_irq != 0 && atomic_read(&(g_card->irq_enable_count)) == 0) {
 			BTMTK_INFO("enable BT IRQ:%d", g_card->wobt_irq);
 			irq_set_irq_wake(g_card->wobt_irq, 1);
@@ -6204,7 +6223,7 @@ static int btmtk_sdio_resume(struct device *dev)
 		return 0;
 	}
 
-	if (g_card->bt_cfg.support_woble_by_eint) {
+	if (g_card->bt_cfg.support_unify_woble && g_card->bt_cfg.support_woble_by_eint) {
 		if (g_card->wobt_irq != 0 && atomic_read(&(g_card->irq_enable_count)) == 1) {
 			BTMTK_INFO("disable BT IRQ:%d", g_card->wobt_irq);
 			atomic_dec(&(g_card->irq_enable_count));
