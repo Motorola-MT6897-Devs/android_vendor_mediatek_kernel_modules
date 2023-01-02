@@ -2184,7 +2184,7 @@ FW_DONE:
 	}
 
 	if (event_compare_status == BTMTK_SDIO_EVENT_COMPARE_STATE_NEED_COMPARE)
-		BTSDIO_DEBUG_RAW(skb->data, buf_len, "%s: skb->data :", __func__);
+		BTSDIO_RAW_PR_DEBUG(skb->data, buf_len, "%s: skb->data :", __func__);
 
 	if ((buf_len >= sizeof(READ_ADDRESS_EVENT))
 		&& (event_compare_status == BTMTK_SDIO_EVENT_COMPARE_STATE_NEED_COMPARE)) {
@@ -2212,7 +2212,7 @@ FW_DONE:
 					pr_debug("%s compare success\n", __func__);
 				} else {
 					pr_debug("%s compare fail\n", __func__);
-					BTSDIO_DEBUG_RAW(event_need_compare, event_need_compare_len,
+					BTSDIO_RAW_PR_DEBUG(event_need_compare, event_need_compare_len,
 						"%s: event_need_compare :", __func__);
 				}
 			}
@@ -2884,7 +2884,7 @@ static int btmtk_sdio_send_get_vendor_cap(void)
 	u8 get_vendor_cap_event[] = { 0x0e, 0x12, 0x01, 0x53, 0xFD, 0x00};
 
 	pr_debug("%s: begin", __func__);
-	BTSDIO_DEBUG_RAW(get_vendor_cap_cmd, sizeof(get_vendor_cap_cmd), "%s: send vendor_cap_cmd is:", __func__);
+	BTSDIO_RAW_PR_DEBUG(get_vendor_cap_cmd, sizeof(get_vendor_cap_cmd), "%s: send vendor_cap_cmd is:", __func__);
 	ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT, get_vendor_cap_cmd, sizeof(get_vendor_cap_cmd),
 		get_vendor_cap_event, sizeof(get_vendor_cap_event),
 				WOBLE_COMP_EVENT_TIMO, 1);
@@ -2912,7 +2912,7 @@ static int btmtk_sdio_send_read_BDADDR_cmd(void)
 		g_card->bdaddr[3], g_card->bdaddr[4], g_card->bdaddr[5]);
 		return 0;
 	}
-	BTSDIO_DEBUG_RAW(cmd, sizeof(cmd), "%s: send read bd address cmd is:", __func__);
+	BTSDIO_RAW_PR_DEBUG(cmd, sizeof(cmd), "%s: send read bd address cmd is:", __func__);
 	ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT, cmd, sizeof(cmd),
 		READ_ADDRESS_EVENT, sizeof(READ_ADDRESS_EVENT), WOBLE_COMP_EVENT_TIMO, 1);
 	/*BD address will get in btmtk_sdio_host_to_card*/
@@ -2989,7 +2989,7 @@ static int btmtk_sdio_set_Woble_APCF(void)
 			}
 
 			pr_info("%s: send APCF %d", __func__, i);
-			BTSDIO_INFO_RAW(g_card->woble_setting_apcf[i].content, g_card->woble_setting_apcf[i].length,
+			BTSDIO_RAW_PR_INFO(g_card->woble_setting_apcf[i].content, g_card->woble_setting_apcf[i].length,
 				"woble_setting_apcf");
 
 			ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT, g_card->woble_setting_apcf[i].content,
@@ -3005,7 +3005,7 @@ static int btmtk_sdio_set_Woble_APCF(void)
 	} else { /* use default */
 		pr_info("%s: use default manufactur data", __func__);
 		memcpy(manufactur_data + 9, g_card->bdaddr, BD_ADDRESS_SIZE);
-		BTSDIO_DEBUG_RAW(manufactur_data, sizeof(manufactur_data),
+		BTSDIO_RAW_PR_DEBUG(manufactur_data, sizeof(manufactur_data),
 						"send manufactur_data ");
 
 		ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT, manufactur_data,
@@ -3037,7 +3037,7 @@ static int btmtk_sdio_send_woble_settings(struct woble_setting_struct *settings_
 		for (i = 0; i < WOBLE_SETTING_COUNT; i++) {
 			if (settings_cmd[i].length) {
 				pr_info("%s: send %s %d", __func__, message, i);
-				BTSDIO_INFO_RAW(settings_cmd[i].content,
+				BTSDIO_RAW_PR_INFO(settings_cmd[i].content,
 					settings_cmd[i].length, "Raw");
 
 				ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT, settings_cmd[i].content,
@@ -3153,7 +3153,7 @@ static int btmtk_sdio_send_leave_woble_suspend_cmd(void)
 	u8 cmd[] = { 0xC9, 0xFC, 0x05, 0x01, 0x21, 0x02, 0x00, 0x00 };
 	u8 comp_event[] = { 0xe6, 0x02, 0x08, 0x01 };
 
-	BTSDIO_DEBUG_RAW(cmd, sizeof(cmd), "cmd ");
+	BTSDIO_RAW_PR_DEBUG(cmd, sizeof(cmd), "cmd ");
 	ret = btmtk_sdio_send_hci_cmd(HCI_COMMAND_PKT, cmd,	sizeof(cmd),
 				comp_event, sizeof(comp_event), WOBLE_COMP_EVENT_TIMO, 1);
 
