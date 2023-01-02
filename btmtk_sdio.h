@@ -16,7 +16,7 @@
 #include "btmtk_config.h"
 #include <linux/pm_wakeup.h>
 
-#define VERSION "v0.0.1.13_2020081701"
+#define VERSION "v0.0.1.13_2020082601"
 
 #define SDIO_HEADER_LEN				4
 #define STP_HEADER_LEN				4
@@ -175,11 +175,11 @@ struct bt_cfg_struct {
 	bool	support_woble_wakelock;		/* support when woble error, do wakelock or not */
 	bool	support_woble_for_bt_disable;		/* when bt disable, support enter susend or not */
 	bool	reset_stack_after_woble;	/* support reset stack to re-connect IOT after resume */
-	unsigned int	dongle_reset_gpio_pin;		/* BT_DONGLE_RESET_GPIO_PIN number */
+	bool	support_auto_picus;			/* support enable PICUS automatically */
+	struct fw_cfg_struct picus_filter;	/* support on PICUS filter command customization */
+	int	dongle_reset_gpio_pin;		/* BT_DONGLE_RESET_GPIO_PIN number */
 	char	*sys_log_file_name;
 	char	*fw_dump_file_name;
-	bool	support_auto_picus;		/* support enable PICUS automatically */
-	struct fw_cfg_struct picus_filter;	/* support on PICUS filter command customization */
 	struct fw_cfg_struct wmt_cmd[WMT_CMD_COUNT];
 	struct fw_cfg_struct vendor_cmd[VENDOR_CMD_COUNT];
 };
@@ -235,6 +235,10 @@ struct btmtk_sdio_card {
 	u8 *bin_file_buffer;
 	size_t bin_file_size;
 	u8 efuse_mode;
+
+	struct sk_buff_head tx_queue;
+	struct sk_buff_head fops_queue;
+	struct sk_buff_head fwlog_fops_queue;
 
 	enum bt_sdio_dongle_state dongle_state;
 };
