@@ -59,7 +59,7 @@ extern u8 btmtk_log_lvl;
 
 #define BTMTK_WARN_LIMITTED(fmt, ...)     \
 	do {												\
-        //remove for alps check service
+		/* remove for alps check service */						\
 	} while (0)
 
 
