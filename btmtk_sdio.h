@@ -16,7 +16,7 @@
 #include "btmtk_config.h"
 #include <linux/pm_wakeup.h>
 
-#define VERSION "v0.0.1.12_2019071501"
+#define VERSION "v0.0.1.12_2020072801"
 
 #define SDIO_HEADER_LEN                 4
 
