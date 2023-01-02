@@ -32,77 +32,6 @@
 # have been modified by MediaTek Inc. All revisions are subject to any receiver's
 # applicable license agreements with MediaTek Inc.
 
-LOCAL_PATH := $(call my-dir)
-
-###############################################################################
-#################### KERNEL ENVIRONMENT SETUP #################################
-#
-# Align variable in Kernel-x.xx/Android.mk
-#
-###############################################################################
-ifeq ($(MTK_BT_SUPPORT),yes)
-ifneq ($(filter MTK_MT76%, $(MTK_BT_CHIP)),)
-
-ifeq ($(PRODUCT_OUT),)
-    $(error PRODUCT_OUT is not defined)
-endif
-
-ifeq ($(LINUX_KERNEL_VERSION),)
-    $(error LINUX_KERNEL_VERSION is not defined)
-endif
-
-ifneq ($(ANDROID_PRODUCT_OUT),)
-export ALPS_OUT=$(ANDROID_PRODUCT_OUT)
-else
-export ALPS_OUT=$(PRODUCT_OUT)
-endif
-
-# set for module Makefile
-export KERNEL_DIR=$(realpath $(LINUX_KERNEL_VERSION))
-ifeq ($(KERNEL_OUT),)
-export KERNEL_OUT=$(ALPS_OUT)/obj/KERNEL_OBJ
-endif
-
-# check kernel folder exist
-ifeq (,$(wildcard $(KERNEL_DIR)))
-    $(error kernel $(KERNEL_DIR) is not existed)
-endif
-
-ifeq ($(KERNEL_CROSS_COMPILE),)
-ifeq ($(TARGET_ARCH), arm64)
-  export KERNEL_CROSS_COMPILE=$(KERNEL_DIR)/$(TARGET_TOOLS_PREFIX)
-else
-  export KERNEL_CROSS_COMPILE=$(KERNEL_DIR)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-eabi-$(TARGET_GCC_VERSION)/bin/arm-eabi-
-endif
-endif
-
-# check cross compiler exist
-ifeq (,$(wildcard $(KERNEL_CROSS_COMPILE)gcc))
-    $(error $(KERNEL_CROSS_COMPILE) is not existed)
-endif
-
-LOCAL_KERNEL_MAKE_OPTION := O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) CROSS_COMPILE=$(KERNEL_CROSS_COMPILE) ROOTDIR=$(KERNEL_DIR) KERNEL_DIR=$(KERNEL_DIR)
-export KERNEL_MAKE_OPTION=$(LOCAL_KERNEL_MAKE_OPTION)
-
-ifeq ($(TARGET_ARCH), arm64)
-  ifeq ($(MTK_APPENDED_DTB_SUPPORT), yes)
-    export KERNEL_ZIMAGE_OUT=$(KERNEL_OUT)/arch/$(TARGET_ARCH)/boot/Image.gz-dtb
-  else
-    export KERNEL_ZIMAGE_OUT=$(KERNEL_OUT)/arch/$(TARGET_ARCH)/boot/Image.gz
-  endif
-else
-  ifeq ($(MTK_APPENDED_DTB_SUPPORT), yes)
-    export KERNEL_ZIMAGE_OUT=$(KERNEL_OUT)/arch/$(TARGET_ARCH)/boot/zImage-dtb
-  else
-    export KERNEL_ZIMAGE_OUT=$(KERNEL_OUT)/arch/$(TARGET_ARCH)/boot/zImage
-  endif
-endif
-
-# set for module Makefile
-export AUTOCONF_H=$(KERNEL_OUT)/include/generated/autoconf.h
-export AUTO_CONF=$(KERNEL_OUT)/include/config/auto.conf
-
-
 ###############################################################################
 # Generally Android.mk can not get KConfig setting
 # we can use this way to get
@@ -137,32 +66,16 @@ export AUTO_CONF=$(KERNEL_OUT)/include/config/auto.conf
 ###############################################################################
 ###############################################################################
 
+LOCAL_PATH := $(call my-dir)
+
+ifeq ($(MTK_BT_SUPPORT),yes)
+ifneq ($(filter MTK_MT76%, $(MTK_BT_CHIP)),)
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := btmtksdio.ko
-LOCAL_STRIP_MODULE := true
-
-LOCAL_MODULE_CLASS := ETC
-LOCAL_MODULE_TAGS := optional
-LOCAL_MULTILIB := first
-LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR)/lib/modules
 LOCAL_INIT_RC := init.btmtksdio.rc
-LOCAL_SRC_FILES := $(patsubst $(LOCAL_PATH)/%,%,$(shell find $(LOCAL_PATH) -type f \( -name '*.[choS]' -o -name Kbuild \))) Makefile
-LOCAL_POST_INSTALL_CMD := $(hide)$(TARGET_STRIP) --strip-unneeded $(LOCAL_MODULE_PATH)/$(LOCAL_MODULE)
 
-include $(BUILD_SYSTEM)/base_rules.mk
-
-LOCAL_GENERATED_SOURCES := $(addprefix $(intermediates)/,$(LOCAL_SRC_FILES))
-
-$(LOCAL_GENERATED_SOURCES): $(intermediates)/% : $(LOCAL_PATH)/% | $(ACP)
-	@echo "Copy: $@"
-	$(copy-file-to-target)
-
-$(LOCAL_BUILT_MODULE): KOUT := $(KERNEL_OUT)
-$(LOCAL_BUILT_MODULE): OPTS := \
-  $(KERNEL_MAKE_OPTION) M=$(abspath $(intermediates))
-$(LOCAL_BUILT_MODULE): $(LOCAL_GENERATED_SOURCES) $(KERNEL_ZIMAGE_OUT)
-	@echo $@: $^
-	$(MAKE) -C $(KOUT) $(OPTS)
+include $(MTK_KERNEL_MODULE)
 
 endif
 endif
