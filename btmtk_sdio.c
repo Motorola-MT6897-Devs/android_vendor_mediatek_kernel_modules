@@ -7492,13 +7492,13 @@ static int btmtk_sdio_allocate_memory(void)
 	memset(userbuf_fwlog, 0, MTK_TXDATA_SIZE);
 
 	g_card = kzalloc(sizeof(*g_card), GFP_KERNEL);
-	memset(g_card, 0, sizeof(g_card));
+	memset(g_card, 0, sizeof(*g_card));
 
 	g_priv = kzalloc(sizeof(*g_priv), GFP_KERNEL);
-	memset(g_priv, 0, sizeof(g_priv));
+	memset(g_priv, 0, sizeof(*g_priv));
 
 	g_priv->adapter = kzalloc(sizeof(*g_priv->adapter), GFP_KERNEL);
-	memset(g_priv->adapter, 0, sizeof(g_priv->adapter));
+	memset(g_priv->adapter, 0, sizeof(*g_priv->adapter));
 
 	g_card->priv = g_priv;
 
