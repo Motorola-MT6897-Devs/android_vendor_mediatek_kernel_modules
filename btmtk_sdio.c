@@ -6291,8 +6291,6 @@ static void btmtk_sdio_L0_hook_new_probe(sdio_card_probe pFn_Probe)
 
 static int btmtk_clean_queue(void)
 {
-	struct sk_buff *skb = NULL;
-
 	BTMTK_INFO("enter");
 	LOCK_UNSLEEPABLE_LOCK(&(metabuffer.spin_lock));
 	skb_queue_purge(&g_card->tx_queue);
