@@ -4894,8 +4894,6 @@ int btmtk_sdio_driver_reset_dongle(void)
 		BTMTK_INFO("g_priv = NULL, return");
 		return -1;
 	}
-
-	need_reset_stack = 1;
 	wlan_remove_done = 0;
 
 retry_reset:
@@ -4940,7 +4938,9 @@ rst_dongle_err:
 	btmtk_clean_queue();
 	g_priv->btmtk_dev.reset_progress = 0;
 	dump_data_counter = 0;
-	BTMTK_INFO("return ret = %d", ret);
+	need_reset_stack = 1;
+	wake_up_interruptible(&inq);
+	BTMTK_INFO("need reset stack = %d, return ret = %d", need_reset_stack, ret);
 	return ret;
 }
 
