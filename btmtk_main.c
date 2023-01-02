@@ -140,7 +140,7 @@ static int btmtk_service_main_thread(void *data)
 		if (probe_ready)
 			break;
 
-		BTMTK_INFO("probe_ready %d delay 10ms~15ms", probe_ready);
+		/* BTMTK_INFO("probe_ready %d delay 10ms~15ms", probe_ready);*/
 		usleep_range(10*1000, 15*1000);
 
 		if (i == 1000) {
