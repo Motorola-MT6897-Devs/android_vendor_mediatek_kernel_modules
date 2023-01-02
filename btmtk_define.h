@@ -94,6 +94,7 @@ extern u8 btmtk_log_lvl;
 	#define FW_DUMP_FILE_NAME	"/sdcard/"FWDUMP_FNAME
 #endif /* FW_DUMP_FILE_NAME */
 
+#if 0 /* remove unused code */
 /**
  * SYS control
  */
@@ -165,6 +166,7 @@ extern u8 btmtk_log_lvl;
  * fw log queue count
  */
 #define FWLOG_QUEUE_COUNT 200
+#endif
 
 /**
  * Maximum rom patch file name length
