@@ -73,6 +73,8 @@ ifneq ($(filter MTK_MT76%, $(MTK_BT_CHIP)),)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := btmtksdio.ko
+LOCAL_PROPRIETARY_MODULE := true
+LOCAL_MODULE_OWNER := mtk
 LOCAL_INIT_RC := init.btmtksdio.rc
 
 include $(MTK_KERNEL_MODULE)
