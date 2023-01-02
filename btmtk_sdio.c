@@ -4147,6 +4147,7 @@ static int btmtk_sdio_card_to_host(struct btmtk_private *priv, const u8 *event, 
 		btmtk_sdio_dispatch_data_bluetooth_kpi(&rxbuf[MTK_SDIO_PACKET_HEADER_SIZE], buf_len + 1, 0);
 	}
 
+#if 0
 	/* to drop picus related event after save event, don't send picus event to host,
 	 * because host will trace this event as other host cmd's event,
 	 * it will cause command timeout
@@ -4155,6 +4156,7 @@ static int btmtk_sdio_card_to_host(struct btmtk_private *priv, const u8 *event, 
 		BTSDIO_INFO_RAW(skb->data, buf_len, "%s: discard picus related event:", __func__);
 		goto exit;
 	}
+#endif
 
 	fops_skb = bt_skb_alloc(buf_len, GFP_ATOMIC);
 	if (fops_skb == NULL) {
