@@ -227,15 +227,8 @@ struct ring_buffer {
 	u32 write_p;		/* indicate the current write index */
 };
 
-#ifdef CONFIG_DEBUG_FS
-
 #define FIXED_STPBT_MAJOR_DEV_ID 111
-
-
-
 #define FW_DUMP_END_EVENT "coredump end"
-
-#endif
 
 #endif
 
