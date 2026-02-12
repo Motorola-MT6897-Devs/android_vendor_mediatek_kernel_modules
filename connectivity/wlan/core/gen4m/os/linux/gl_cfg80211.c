@@ -1465,6 +1465,10 @@ int wlanParseAkmSuites(uint32_t *au4AkmSuites, uint32_t u4AkmSuitesCount,
 				rsnKeyMgmtToBit(u4AkmSuite);
 		}
 
+		/* Force SAE if requested, bypassing table check failure */
+		if (u4AkmSuite == RSN_AKM_SUITE_SAE)
+			prMib->dot11RSNAConfigAkm |= rsnKeyMgmtToBit(u4AkmSuite);
+
 		if (i == 0) {
 			*prAuthMode = eAuthMode;
 			*pu4AkmSuite = u4AkmSuite;
@@ -1562,7 +1566,8 @@ int mtk_cfg80211_connect(struct wiphy *wiphy,
 
 	if (sme->crypto.wpa_versions & NL80211_WPA_VERSION_1)
 		prWpaInfo->u4WpaVersion = IW_AUTH_WPA_VERSION_WPA;
-	else if (sme->crypto.wpa_versions & NL80211_WPA_VERSION_2)
+	else if (sme->crypto.wpa_versions & NL80211_WPA_VERSION_2 ||
+             (sme->crypto.wpa_versions & 0x4)) /* Handle WPA3 (v4) as WPA2/RSN */
 		prWpaInfo->u4WpaVersion = IW_AUTH_WPA_VERSION_WPA2;
 	else
 		prWpaInfo->u4WpaVersion = IW_AUTH_WPA_VERSION_DISABLED;
